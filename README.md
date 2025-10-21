@@ -9,7 +9,8 @@ Python client for interacting with TFS (Team Foundation Server) / Azure DevOps S
 - Get list of branches from TFS repositories
 - Fetch work items by ID
 - List repositories in a project
-- Support for username/password, Personal Access Token (PAT), and Windows authentication
+- **Flexible authentication: Choose username/password OR Personal Access Token (PAT)**
+- Configuration file support for easy setup
 - Compatible with Azure DevOps Server 2020 Update 1.1 (API version 6.0)
 
 ## Installation
@@ -22,54 +23,132 @@ pip install -r requirements.txt
 
 ## Configuration
 
-The client can be configured using environment variables or by passing parameters directly to the `TFSClient` constructor.
+The client supports **three flexible configuration methods**. You can choose either **username/password** OR **personal access token** for authentication.
 
-### Environment Variables
+### Method 1: Configuration File (Recommended)
 
-Create a `.env` file or set the following environment variables:
+Create a `tfs_config.ini` file for easy configuration management. Choose one of the example files based on your authentication preference:
+
+**For Username/Password Authentication:**
+```bash
+cp tfs_config_userpass.ini.example tfs_config.ini
+# Edit tfs_config.ini with your credentials
+```
+
+**For Personal Access Token Authentication:**
+```bash
+cp tfs_config_pat.ini.example tfs_config.ini
+# Edit tfs_config.ini with your PAT
+```
+
+Example configuration file structure:
+```ini
+[server]
+url = http://tfs-server:8080/tfs/DefaultCollection
+
+[auth]
+# EITHER username/password (Option 1 - recommended)
+username = your_username
+password = your_password
+
+# OR personal access token (Option 2)
+# personal_access_token = your_pat_here
+
+[project]
+name = YourProjectName
+repository = YourRepositoryName
+```
+
+### Method 2: Environment Variables
+
+Create a `.env` file or set environment variables:
 
 ```bash
 TFS_URL=http://your-tfs-server:8080/tfs/DefaultCollection
 
-# Option 1: Username and Password (recommended)
+# EITHER username/password (Option 1 - recommended)
 TFS_USERNAME=your_username
 TFS_PASSWORD=your_password
 
-# Option 2: Personal Access Token
-TFS_PAT=your_personal_access_token
+# OR personal access token (Option 2)
+# TFS_PAT=your_personal_access_token
 
 # Project Configuration
 TFS_PROJECT=YourProjectName
 TFS_REPOSITORY=YourRepositoryName
 ```
 
+### Method 3: Direct Parameters
+
+Pass parameters directly when creating the client (see Usage section below).
+
 ## Usage
 
-### Basic Example
+### Quick Start with Configuration File
+
+```python
+from tfs_client import TFSClient
+from tfs_config import TFSConfig
+
+# Load configuration from tfs_config.ini
+config = TFSConfig('tfs_config.ini')
+conn_params = config.get_connection_params()
+
+# Create client (automatically uses username/password OR PAT from config)
+client = TFSClient(**conn_params)
+
+# Get branches
+branches = client.get_refs(
+    project=config.get_project(),
+    repository=config.get_repository()
+)
+
+# Get work item
+work_item = client.get_work_item(123)
+```
+
+### Authentication Options
+
+The client accepts **EITHER** username/password **OR** personal access token:
+
+#### Option 1: Username and Password (Recommended for Azure DevOps Server 2020)
 
 ```python
 from tfs_client import TFSClient
 
-# Option 1: Initialize client with username and password (recommended)
 client = TFSClient(
     organization_url='http://tfs-server:8080/tfs/DefaultCollection',
     username='your_username',
     password='your_password'
 )
+```
 
-# Option 2: Initialize client with Personal Access Token
+#### Option 2: Personal Access Token
+
+```python
+from tfs_client import TFSClient
+
 client = TFSClient(
     organization_url='http://tfs-server:8080/tfs/DefaultCollection',
     personal_access_token='your_pat_here'
 )
+```
 
-# Option 3: Use default Windows credentials (on-premise TFS)
+#### Option 3: Windows Default Credentials
+
+```python
+from tfs_client import TFSClient
+
 client = TFSClient(
     organization_url='http://tfs-server:8080/tfs/DefaultCollection',
     use_default_credentials=True
 )
+```
 
-# Get branches
+### Working with Branches and Work Items
+
+```python
+# Get list of branches
 branches = client.get_refs(
     project='MyProject',
     repository='MyRepo',
@@ -80,10 +159,15 @@ for branch in branches:
     print(f"Branch: {branch['name']}")
     print(f"  Commit: {branch['object_id']}")
 
-# Get work item by ID
+# Get a single work item by ID
 work_item = client.get_work_item(work_item_id=123)
 print(f"Work Item: {work_item['fields'].get('System.Title')}")
 print(f"State: {work_item['fields'].get('System.State')}")
+
+# Get multiple work items
+work_items = client.get_work_items([123, 456, 789])
+for wi in work_items:
+    print(f"#{wi['id']}: {wi['fields'].get('System.Title')}")
 ```
 
 ### Running the Example Script
@@ -165,9 +249,11 @@ List all repositories in a project.
 
 ## Authentication
 
-The client supports three authentication methods:
+**You can configure authentication using EITHER username/password OR personal access token.**
 
-### 1. Username and Password (Recommended)
+The client supports three authentication methods - choose the one that works best for your environment:
+
+### 1. Username and Password (Recommended for Azure DevOps Server 2020)
 
 Use your TFS username and password for basic authentication:
 
@@ -179,7 +265,11 @@ client = TFSClient(
 )
 ```
 
+**When to use:** This is the most straightforward method for on-premise Azure DevOps Server installations.
+
 ### 2. Personal Access Token (PAT)
+
+Use a Personal Access Token instead of username/password:
 
 1. Generate a PAT from your TFS/Azure DevOps Server
 2. Grant required permissions (Code: Read, Work Items: Read)
@@ -192,6 +282,8 @@ client = TFSClient(
 )
 ```
 
+**When to use:** Ideal for automation, CI/CD pipelines, or when you prefer token-based authentication.
+
 ### 3. Windows Authentication
 
 For on-premise TFS with Windows authentication, set `use_default_credentials=True`:
@@ -202,6 +294,12 @@ client = TFSClient(
     use_default_credentials=True
 )
 ```
+
+**When to use:** For Windows domain environments where you want to use your current Windows credentials.
+
+---
+
+**Note:** The client automatically handles authentication based on which parameters you provide. If you provide both username/password and PAT, username/password will take precedence.
 
 ## Requirements
 

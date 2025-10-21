@@ -28,6 +28,9 @@ env/
 # Environment variables
 .env
 
+# TFS Configuration
+tfs_config.ini
+
 # IDE
 .vscode/
 .idea/

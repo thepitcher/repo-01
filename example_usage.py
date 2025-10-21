@@ -1,43 +1,83 @@
 """
 Example usage of TFS Client to fetch branches and work items.
+
+This script demonstrates multiple ways to authenticate:
+1. Using configuration file (tfs_config.ini)
+2. Using environment variables
+3. Direct parameters
+
+You can configure authentication using EITHER:
+- Username and Password (recommended for Azure DevOps Server 2020)
+- Personal Access Token (PAT)
+- Default Windows Credentials
 """
 
 import os
+import sys
 from tfs_client import TFSClient
+from tfs_config import TFSConfig
 
 
 def main():
-    # Configuration - Update these values for your TFS environment
-    TFS_URL = os.getenv('TFS_URL', 'http://tfs-server:8080/tfs/DefaultCollection')
-    TFS_USERNAME = os.getenv('TFS_USERNAME')
-    TFS_PASSWORD = os.getenv('TFS_PASSWORD')
-    TFS_PAT = os.getenv('TFS_PAT')  # Personal Access Token
-    PROJECT_NAME = os.getenv('TFS_PROJECT', 'YourProjectName')
-    REPOSITORY_NAME = os.getenv('TFS_REPOSITORY', 'YourRepositoryName')
+    print("=" * 80)
+    print("TFS Client Example Usage - Azure DevOps Server 2020 Update 1.1")
+    print("=" * 80)
 
-    # Initialize TFS client
-    # Option 1: Using username and password (recommended)
-    if TFS_USERNAME and TFS_PASSWORD:
-        client = TFSClient(
-            organization_url=TFS_URL,
-            username=TFS_USERNAME,
-            password=TFS_PASSWORD
-        )
-    # Option 2: Using Personal Access Token
-    elif TFS_PAT:
-        client = TFSClient(
-            organization_url=TFS_URL,
-            personal_access_token=TFS_PAT
-        )
-    # Option 3: Using default Windows credentials (for on-premise TFS)
+    # Method 1: Using configuration file (recommended)
+    # Create a 'tfs_config.ini' file based on the examples provided
+    if os.path.exists('tfs_config.ini'):
+        print("\n[INFO] Loading configuration from tfs_config.ini")
+        config = TFSConfig('tfs_config.ini')
+
+        # Get connection parameters
+        conn_params = config.get_connection_params()
+        PROJECT_NAME = config.get_project()
+        REPOSITORY_NAME = config.get_repository()
+
+        # Display authentication method
+        auth_method = config.get_auth_method()
+        print(f"[INFO] Authentication method: {auth_method}")
+
+        # Create client with config
+        client = TFSClient(**conn_params)
+
+    # Method 2: Using environment variables or direct configuration
     else:
-        client = TFSClient(
-            organization_url=TFS_URL,
-            use_default_credentials=True
-        )
+        print("\n[INFO] No tfs_config.ini found, using environment variables")
+        print("[INFO] Create tfs_config.ini from examples for easier configuration")
+
+        TFS_URL = os.getenv('TFS_URL', 'http://tfs-server:8080/tfs/DefaultCollection')
+        TFS_USERNAME = os.getenv('TFS_USERNAME')
+        TFS_PASSWORD = os.getenv('TFS_PASSWORD')
+        TFS_PAT = os.getenv('TFS_PAT')  # Personal Access Token
+        PROJECT_NAME = os.getenv('TFS_PROJECT', 'YourProjectName')
+        REPOSITORY_NAME = os.getenv('TFS_REPOSITORY', 'YourRepositoryName')
+
+        # Initialize TFS client with flexible authentication
+        # OPTION 1: Using username and password (recommended for Azure DevOps Server 2020)
+        if TFS_USERNAME and TFS_PASSWORD:
+            print("[INFO] Authenticating with username and password")
+            client = TFSClient(
+                organization_url=TFS_URL,
+                username=TFS_USERNAME,
+                password=TFS_PASSWORD
+            )
+        # OPTION 2: Using Personal Access Token
+        elif TFS_PAT:
+            print("[INFO] Authenticating with Personal Access Token")
+            client = TFSClient(
+                organization_url=TFS_URL,
+                personal_access_token=TFS_PAT
+            )
+        # OPTION 3: Using default Windows credentials (for on-premise TFS)
+        else:
+            print("[INFO] Using default Windows credentials")
+            client = TFSClient(
+                organization_url=TFS_URL,
+                use_default_credentials=True
+            )
 
     print("=" * 80)
-    print("TFS Client Example Usage")
     print("=" * 80)
 
     # Example 1: List repositories in the project

@@ -1,0 +1,16 @@
+# TFS/Azure DevOps Server Configuration File - Username/Password Example
+# Copy this file to 'tfs_config.ini' to use username/password authentication
+
+[server]
+# Azure DevOps Server URL
+url = http://tfs-server:8080/tfs/DefaultCollection
+
+[auth]
+# Username and Password Authentication (recommended)
+username = your_username
+password = your_password
+
+[project]
+# Default project and repository names
+name = YourProjectName
+repository = YourRepositoryName

@@ -1,0 +1,25 @@
+# TFS/Azure DevOps Server Configuration File
+# Copy this file to 'tfs_config.ini' and update with your settings
+
+[server]
+# Azure DevOps Server URL
+url = http://tfs-server:8080/tfs/DefaultCollection
+
+[auth]
+# OPTION 1: Username and Password Authentication (recommended for Azure DevOps Server 2020)
+# Uncomment the following lines to use username/password authentication
+username = your_username
+password = your_password
+
+# OPTION 2: Personal Access Token Authentication
+# Uncomment the following line to use PAT authentication (comment out username/password above)
+# personal_access_token = your_personal_access_token_here
+
+# OPTION 3: Default Windows Credentials
+# To use default Windows credentials, comment out all auth options above
+# The client will automatically use default credentials if no auth is provided
+
+[project]
+# Default project and repository names
+name = YourProjectName
+repository = YourRepositoryName
