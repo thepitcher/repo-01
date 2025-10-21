@@ -16,6 +16,8 @@ class TFSClient:
     def __init__(
         self,
         organization_url: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
         personal_access_token: Optional[str] = None,
         use_default_credentials: bool = False
     ):
@@ -24,19 +26,28 @@ class TFSClient:
 
         Args:
             organization_url: TFS server URL (e.g., 'http://tfs-server:8080/tfs/DefaultCollection')
+            username: Username for basic authentication
+            password: Password for basic authentication
             personal_access_token: Personal Access Token for authentication
             use_default_credentials: Use default Windows credentials (for on-premise TFS)
         """
         self.organization_url = organization_url
 
         # Setup authentication
-        if personal_access_token:
+        if username and password:
+            # Basic authentication with username and password
+            credentials = BasicAuthentication(username, password)
+        elif personal_access_token:
+            # PAT authentication (empty username with PAT as password)
             credentials = BasicAuthentication('', personal_access_token)
         elif use_default_credentials:
             # For on-premise TFS with Windows authentication
             credentials = None  # Will use default credentials
         else:
-            raise ValueError("Either personal_access_token or use_default_credentials must be provided")
+            raise ValueError(
+                "Authentication required: provide either username/password, "
+                "personal_access_token, or set use_default_credentials=True"
+            )
 
         # Create connection
         self.connection = Connection(

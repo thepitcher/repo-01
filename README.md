@@ -7,7 +7,7 @@ Python client for interacting with TFS (Team Foundation Server) / Azure DevOps S
 - Get list of branches from TFS repositories
 - Fetch work items by ID
 - List repositories in a project
-- Support for both Personal Access Token (PAT) and Windows authentication
+- Support for username/password, Personal Access Token (PAT), and Windows authentication
 
 ## Installation
 
@@ -27,7 +27,15 @@ Create a `.env` file or set the following environment variables:
 
 ```bash
 TFS_URL=http://your-tfs-server:8080/tfs/DefaultCollection
+
+# Option 1: Username and Password (recommended)
+TFS_USERNAME=your_username
+TFS_PASSWORD=your_password
+
+# Option 2: Personal Access Token
 TFS_PAT=your_personal_access_token
+
+# Project Configuration
 TFS_PROJECT=YourProjectName
 TFS_REPOSITORY=YourRepositoryName
 ```
@@ -39,13 +47,20 @@ TFS_REPOSITORY=YourRepositoryName
 ```python
 from tfs_client import TFSClient
 
-# Initialize client with Personal Access Token
+# Option 1: Initialize client with username and password (recommended)
+client = TFSClient(
+    organization_url='http://tfs-server:8080/tfs/DefaultCollection',
+    username='your_username',
+    password='your_password'
+)
+
+# Option 2: Initialize client with Personal Access Token
 client = TFSClient(
     organization_url='http://tfs-server:8080/tfs/DefaultCollection',
     personal_access_token='your_pat_here'
 )
 
-# Or use default Windows credentials (on-premise TFS)
+# Option 3: Use default Windows credentials (on-premise TFS)
 client = TFSClient(
     organization_url='http://tfs-server:8080/tfs/DefaultCollection',
     use_default_credentials=True
@@ -84,12 +99,14 @@ The example script demonstrates:
 
 ### TFSClient
 
-#### `__init__(organization_url, personal_access_token=None, use_default_credentials=False)`
+#### `__init__(organization_url, username=None, password=None, personal_access_token=None, use_default_credentials=False)`
 
 Initialize the TFS client.
 
 **Parameters:**
 - `organization_url` (str): TFS server URL
+- `username` (str, optional): Username for basic authentication
+- `password` (str, optional): Password for basic authentication
 - `personal_access_token` (str, optional): Personal Access Token for authentication
 - `use_default_credentials` (bool, optional): Use Windows default credentials
 
@@ -145,15 +162,43 @@ List all repositories in a project.
 
 ## Authentication
 
-### Personal Access Token (PAT)
+The client supports three authentication methods:
+
+### 1. Username and Password (Recommended)
+
+Use your TFS username and password for basic authentication:
+
+```python
+client = TFSClient(
+    organization_url='http://tfs-server:8080/tfs/DefaultCollection',
+    username='your_username',
+    password='your_password'
+)
+```
+
+### 2. Personal Access Token (PAT)
 
 1. Generate a PAT from your TFS/Azure DevOps Server
 2. Grant required permissions (Code: Read, Work Items: Read)
-3. Use it when initializing the client
+3. Use it when initializing the client:
 
-### Windows Authentication
+```python
+client = TFSClient(
+    organization_url='http://tfs-server:8080/tfs/DefaultCollection',
+    personal_access_token='your_pat'
+)
+```
 
-For on-premise TFS with Windows authentication, set `use_default_credentials=True`.
+### 3. Windows Authentication
+
+For on-premise TFS with Windows authentication, set `use_default_credentials=True`:
+
+```python
+client = TFSClient(
+    organization_url='http://tfs-server:8080/tfs/DefaultCollection',
+    use_default_credentials=True
+)
+```
 
 ## Requirements
 

@@ -9,19 +9,28 @@ from tfs_client import TFSClient
 def main():
     # Configuration - Update these values for your TFS environment
     TFS_URL = os.getenv('TFS_URL', 'http://tfs-server:8080/tfs/DefaultCollection')
+    TFS_USERNAME = os.getenv('TFS_USERNAME')
+    TFS_PASSWORD = os.getenv('TFS_PASSWORD')
     TFS_PAT = os.getenv('TFS_PAT')  # Personal Access Token
     PROJECT_NAME = os.getenv('TFS_PROJECT', 'YourProjectName')
     REPOSITORY_NAME = os.getenv('TFS_REPOSITORY', 'YourRepositoryName')
 
     # Initialize TFS client
-    # Option 1: Using Personal Access Token
-    if TFS_PAT:
+    # Option 1: Using username and password (recommended)
+    if TFS_USERNAME and TFS_PASSWORD:
+        client = TFSClient(
+            organization_url=TFS_URL,
+            username=TFS_USERNAME,
+            password=TFS_PASSWORD
+        )
+    # Option 2: Using Personal Access Token
+    elif TFS_PAT:
         client = TFSClient(
             organization_url=TFS_URL,
             personal_access_token=TFS_PAT
         )
+    # Option 3: Using default Windows credentials (for on-premise TFS)
     else:
-        # Option 2: Using default Windows credentials (for on-premise TFS)
         client = TFSClient(
             organization_url=TFS_URL,
             use_default_credentials=True
