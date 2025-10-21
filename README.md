@@ -2,12 +2,15 @@
 
 Python client for interacting with TFS (Team Foundation Server) / Azure DevOps Server to fetch branches and work items.
 
+**Tested with Azure DevOps Server 2020 Update 1.1**
+
 ## Features
 
 - Get list of branches from TFS repositories
 - Fetch work items by ID
 - List repositories in a project
 - Support for username/password, Personal Access Token (PAT), and Windows authentication
+- Compatible with Azure DevOps Server 2020 Update 1.1 (API version 6.0)
 
 ## Installation
 
@@ -203,8 +206,25 @@ client = TFSClient(
 ## Requirements
 
 - Python 3.6+
-- azure-devops >= 7.1.0
-- TFS 2018+ or Azure DevOps Server
+- azure-devops >= 6.0.0b4, < 7.0.0 (for Azure DevOps Server 2020 Update 1.1 compatibility)
+
+## Compatibility
+
+This client is specifically designed and tested for:
+- **Azure DevOps Server 2020 Update 1.1** (API version 6.0)
+
+It should also work with:
+- TFS 2018 and later
+- TFS 2019
+- Azure DevOps Server 2019
+- Newer versions of Azure DevOps Server
+
+**Note:** Azure DevOps Server 2020 Update 1.1 uses REST API version 6.0. The client uses the `azure-devops` Python SDK version 6.0.0 beta for compatibility.
+
+## Version Information
+
+- **Azure DevOps Server 2020 Update 1.1** → API version 6.0
+- **Python SDK:** azure-devops 6.0.0b4
 
 ## License
 

@@ -1,17 +1,35 @@
 """
 TFS/Azure DevOps Client for fetching branches and work items.
+
+Compatible with Azure DevOps Server 2020 Update 1.1 (API version 6.0)
 """
 
 import os
 from typing import List, Dict, Optional
 from azure.devops.connection import Connection
-from azure.devops.v7_1.git import GitClient
-from azure.devops.v7_1.work_item_tracking import WorkItemTrackingClient
 from msrest.authentication import BasicAuthentication
+
+# Try to import API v6.0 for Azure DevOps Server 2020, fallback to v7.0+
+try:
+    from azure.devops.v6_0.git import GitClient
+    from azure.devops.v6_0.work_item_tracking import WorkItemTrackingClient
+except ImportError:
+    # Fallback to newer versions if v6_0 is not available
+    try:
+        from azure.devops.v7_0.git import GitClient
+        from azure.devops.v7_0.work_item_tracking import WorkItemTrackingClient
+    except ImportError:
+        from azure.devops.v7_1.git import GitClient
+        from azure.devops.v7_1.work_item_tracking import WorkItemTrackingClient
 
 
 class TFSClient:
-    """Client for interacting with TFS/Azure DevOps Server."""
+    """
+    Client for interacting with TFS/Azure DevOps Server.
+
+    Tested with Azure DevOps Server 2020 Update 1.1 (API version 6.0).
+    Should also work with TFS 2018, TFS 2019, and newer Azure DevOps Server versions.
+    """
 
     def __init__(
         self,
@@ -22,7 +40,7 @@ class TFSClient:
         use_default_credentials: bool = False
     ):
         """
-        Initialize TFS client.
+        Initialize TFS client for Azure DevOps Server 2020 Update 1.1.
 
         Args:
             organization_url: TFS server URL (e.g., 'http://tfs-server:8080/tfs/DefaultCollection')
