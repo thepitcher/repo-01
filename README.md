@@ -11,15 +11,33 @@ Python client for interacting with TFS (Team Foundation Server) / Azure DevOps S
 - List repositories in a project
 - **Flexible authentication: Choose username/password OR Personal Access Token (PAT)**
 - Configuration file support for easy setup
+- **Offline installation support** with bundled dependencies in `lib/` folder
 - Compatible with Azure DevOps Server 2020 Update 1.1 (API version 6.0)
 
 ## Installation
 
-1. Install dependencies:
+### Online Installation
+
+Install dependencies from PyPI:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+### Offline Installation
+
+All required packages are included in the `lib/` folder for offline installation:
+
+```bash
+pip install --no-index --find-links=lib -r requirements.txt
+```
+
+This is useful for:
+- Air-gapped environments
+- Systems without internet access
+- Ensuring consistent package versions
+
+For more details, see [lib/README.md](lib/README.md).
 
 ## Configuration
 
