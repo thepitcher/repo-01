@@ -26,9 +26,35 @@ pip install -r requirements.txt
 
 ### Offline Installation
 
-All required packages are included in the `lib/` folder for offline installation:
+All required packages (including build tools) are included in the `lib/` folder for offline installation.
 
+**Option 1: Use the installation script (Recommended)**
+
+For Linux/Mac:
 ```bash
+./install_offline.sh
+```
+
+For Windows:
+```cmd
+install_offline.bat
+```
+
+**Option 2: Manual installation**
+
+**Step 1: Install build tools**
+```bash
+pip install --no-index --find-links=lib --upgrade pip setuptools wheel
+```
+
+**Step 2: Install dependencies**
+```bash
+pip install --no-index --find-links=lib -r requirements.txt
+```
+
+**Or as a single command:**
+```bash
+pip install --no-index --find-links=lib --upgrade pip setuptools wheel && \
 pip install --no-index --find-links=lib -r requirements.txt
 ```
 
@@ -36,8 +62,9 @@ This is useful for:
 - Air-gapped environments
 - Systems without internet access
 - Ensuring consistent package versions
+- Corporate networks with restricted access
 
-For more details, see [lib/README.md](lib/README.md).
+For troubleshooting and more details, see [lib/README.md](lib/README.md).
 
 ## Configuration
 
