@@ -1,18 +1,31 @@
-# TFS Python Client
+# TFS Python Client - Comprehensive API Support
 
-Python client for interacting with TFS (Team Foundation Server) / Azure DevOps Server to fetch branches and work items.
+Python client for interacting with **ALL** TFS (Team Foundation Server) / Azure DevOps Server APIs.
 
 **Tested with Azure DevOps Server 2020 Update 1.1**
 
 ## Features
 
-- Get list of branches from TFS repositories
-- Fetch work items by ID
-- List repositories in a project
+### Comprehensive API Coverage
+This client provides full access to all major TFS/Azure DevOps Server APIs:
+
+- **Git API**: Repositories, branches, pull requests, commits, refs
+- **Work Item Tracking API**: Work items, queries (WIQL), relations
+- **Build API**: Build definitions, builds, queuing builds
+- **Release API**: Release definitions, releases, deployments
+- **Core API**: Projects, teams, processes
+- **Test API**: Test plans, test suites, test runs
+- **Graph API**: Users, groups, memberships
+- **Policy API**: Branch policies
+- **TFVC API**: Team Foundation Version Control
+
+### Additional Features
 - **Flexible authentication: Choose username/password OR Personal Access Token (PAT)**
 - Configuration file support for easy setup
 - **Offline installation support** with bundled dependencies in `lib/` folder
 - Compatible with Azure DevOps Server 2020 Update 1.1 (API version 6.0)
+- Comprehensive error handling and logging
+- Well-documented methods with type hints
 
 ## Installation
 
@@ -190,50 +203,112 @@ client = TFSClient(
 )
 ```
 
-### Working with Branches and Work Items
+### API Usage Examples
+
+#### Git API - Repositories, Branches, Pull Requests
 
 ```python
-# Get list of branches
-branches = client.get_refs(
-    project='MyProject',
-    repository='MyRepo',
-    filter_prefix='refs/heads/'
-)
+# List repositories
+repos = client.list_repositories('MyProject')
 
-for branch in branches:
-    print(f"Branch: {branch['name']}")
-    print(f"  Commit: {branch['object_id']}")
+# Get branches
+branches = client.get_refs('MyProject', 'MyRepo', filter_prefix='refs/heads/')
 
-# Get a single work item by ID
-work_item = client.get_work_item(work_item_id=123)
-print(f"Work Item: {work_item['fields'].get('System.Title')}")
-print(f"State: {work_item['fields'].get('System.State')}")
+# Get pull requests
+prs = client.get_pull_requests('MyProject', 'MyRepo', status='active')
+
+# Get commits
+commits = client.get_commits('MyProject', 'MyRepo', branch='main', top=10)
+```
+
+#### Work Item Tracking API
+
+```python
+# Get a single work item
+work_item = client.get_work_item(123)
 
 # Get multiple work items
 work_items = client.get_work_items([123, 456, 789])
-for wi in work_items:
-    print(f"#{wi['id']}: {wi['fields'].get('System.Title')}")
+
+# Query work items using WIQL
+wiql = "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'"
+work_item_ids = client.query_work_items('MyProject', wiql)
 ```
 
-### Running the Example Script
+#### Build API
 
+```python
+# Get build definitions
+build_defs = client.get_build_definitions('MyProject')
+
+# Get builds
+builds = client.get_builds('MyProject', top=10)
+
+# Queue a new build
+queued_build = client.queue_build('MyProject', definition_id=42, source_branch='main')
+```
+
+#### Release API
+
+```python
+# Get release definitions
+release_defs = client.get_release_definitions('MyProject')
+
+# Get releases
+releases = client.get_releases('MyProject', top=10)
+```
+
+#### Core API - Projects and Teams
+
+```python
+# Get all projects
+projects = client.get_projects()
+
+# Get teams in a project
+teams = client.get_teams('MyProject')
+```
+
+#### Test API
+
+```python
+# Get test plans
+test_plans = client.get_test_plans('MyProject')
+
+# Get test runs
+test_runs = client.get_test_runs('MyProject')
+```
+
+### Running the Example Scripts
+
+**Basic example (branches and work items):**
 ```bash
 python example_usage.py
 ```
 
-The example script demonstrates:
-1. Listing repositories in a project
-2. Fetching all branches in a repository
-3. Getting a specific work item by ID
-4. Fetching multiple work items
+**Comprehensive example (all APIs):**
+```bash
+python example_all_apis.py
+```
+
+The comprehensive example demonstrates:
+1. Core API - Projects and Teams
+2. Git API - Repositories, Branches, Pull Requests, Commits
+3. Work Item Tracking API - Work Items and Queries
+4. Build API - Build Definitions and Builds
+5. Release API - Release Definitions and Releases
+6. Test API - Test Plans and Runs
 
 ## API Reference
 
 ### TFSClient
 
-#### `__init__(organization_url, username=None, password=None, personal_access_token=None, use_default_credentials=False)`
+Comprehensive client providing access to all TFS/Azure DevOps Server APIs.
 
-Initialize the TFS client.
+#### Initialization
+
+```python
+__init__(organization_url, username=None, password=None, personal_access_token=None, use_default_credentials=False)
+```
 
 **Parameters:**
 - `organization_url` (str): TFS server URL
@@ -242,55 +317,51 @@ Initialize the TFS client.
 - `personal_access_token` (str, optional): Personal Access Token for authentication
 - `use_default_credentials` (bool, optional): Use Windows default credentials
 
-#### `get_branches(project, repository)`
+#### Git API Methods
 
-Get list of branches from a repository.
+- `list_repositories(project)` - List all repositories in a project
+- `get_branches(project, repository)` - Get branches from a repository
+- `get_refs(project, repository, filter_prefix)` - Get refs (branches/tags) with filtering
+- `get_pull_requests(project, repository, status)` - Get pull requests
+- `get_commits(project, repository, branch, top)` - Get commits from a repository
 
-**Parameters:**
-- `project` (str): Project name
-- `repository` (str): Repository name
+#### Work Item Tracking API Methods
 
-**Returns:** List of branch dictionaries
+- `get_work_item(work_item_id, expand)` - Get a single work item by ID
+- `get_work_items(work_item_ids, expand)` - Get multiple work items by IDs
+- `query_work_items(project, wiql)` - Query work items using WIQL
 
-#### `get_refs(project, repository, filter_prefix='refs/heads/')`
+#### Build API Methods
 
-Get list of refs (branches/tags) from a repository.
+- `get_build_definitions(project)` - Get build definitions
+- `get_builds(project, definition_id, top)` - Get builds
+- `queue_build(project, definition_id, source_branch)` - Queue a new build
 
-**Parameters:**
-- `project` (str): Project name
-- `repository` (str): Repository name
-- `filter_prefix` (str): Filter refs by prefix (default: 'refs/heads/' for branches)
+#### Release API Methods
 
-**Returns:** List of ref dictionaries
+- `get_release_definitions(project)` - Get release definitions
+- `get_releases(project, definition_id, top)` - Get releases
 
-#### `get_work_item(work_item_id, expand='All')`
+#### Core API Methods
 
-Get a work item by ID.
+- `get_projects()` - Get all projects
+- `get_teams(project)` - Get all teams in a project
 
-**Parameters:**
-- `work_item_id` (int): Work item ID
-- `expand` (str): Level of detail ('None', 'Relations', 'Fields', 'Links', 'All')
+#### Test API Methods
 
-**Returns:** Work item dictionary
+- `get_test_plans(project)` - Get test plans
+- `get_test_runs(project)` - Get test runs
 
-#### `get_work_items(work_item_ids, expand='All')`
+#### Utility Methods
 
-Get multiple work items by IDs.
+- `get_api_version()` - Get the API version being used
+- `get_organization_url()` - Get the organization URL
 
-**Parameters:**
-- `work_item_ids` (List[int]): List of work item IDs
-- `expand` (str): Level of detail ('None', 'Relations', 'Fields', 'Links', 'All')
+### Complete API Documentation
 
-**Returns:** List of work item dictionaries
-
-#### `list_repositories(project)`
-
-List all repositories in a project.
-
-**Parameters:**
-- `project` (str): Project name
-
-**Returns:** List of repository dictionaries
+For detailed documentation of all methods, parameters, and return types, see:
+- **tfs_client.py** - Inline documentation with type hints
+- **example_all_apis.py** - Comprehensive usage examples for all APIs
 
 ## Authentication
 
