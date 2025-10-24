@@ -316,6 +316,106 @@ class TFSClient:
             print(f"Error fetching commits: {str(e)}")
             raise
 
+    def create_branch(self, project: str, repository: str, branch_name: str, source_commit_id: str) -> Dict:
+        """
+        Create a new branch in a repository.
+
+        Args:
+            project: Name of the TFS project
+            repository: Name of the repository
+            branch_name: Name of the new branch (without 'refs/heads/' prefix)
+            source_commit_id: Commit SHA to branch from
+
+        Returns:
+            Dictionary containing the created branch information
+        """
+        try:
+            # Construct the full ref name
+            if not branch_name.startswith('refs/heads/'):
+                ref_name = f'refs/heads/{branch_name}'
+            else:
+                ref_name = branch_name
+
+            # Create the ref update object
+            ref_update = {
+                'name': ref_name,
+                'oldObjectId': '0000000000000000000000000000000000000000',  # New branch
+                'newObjectId': source_commit_id
+            }
+
+            # Update refs
+            updated_refs = self.git_client.update_refs(
+                ref_updates=[ref_update],
+                repository_id=repository,
+                project=project
+            )
+
+            if updated_refs and len(updated_refs) > 0:
+                ref = updated_refs[0]
+                return {
+                    'name': ref.name,
+                    'object_id': ref.new_object_id if hasattr(ref, 'new_object_id') else source_commit_id,
+                    'success': ref.success if hasattr(ref, 'success') else True,
+                    'url': ref.url if hasattr(ref, 'url') else None
+                }
+            else:
+                raise Exception("Failed to create branch - no response from server")
+        except Exception as e:
+            print(f"Error creating branch '{branch_name}': {str(e)}")
+            raise
+
+    def delete_branch(self, project: str, repository: str, branch_name: str) -> bool:
+        """
+        Delete a branch from a repository.
+
+        Args:
+            project: Name of the TFS project
+            repository: Name of the repository
+            branch_name: Name of the branch to delete (without 'refs/heads/' prefix)
+
+        Returns:
+            Boolean indicating success
+        """
+        try:
+            # Construct the full ref name
+            if not branch_name.startswith('refs/heads/'):
+                ref_name = f'refs/heads/{branch_name}'
+            else:
+                ref_name = branch_name
+
+            # Get current branch to get its object ID
+            refs = self.git_client.get_refs(
+                repository_id=repository,
+                project=project,
+                filter=ref_name
+            )
+
+            if not refs or len(refs) == 0:
+                raise Exception(f"Branch '{branch_name}' not found")
+
+            current_object_id = refs[0].object_id
+
+            # Create the ref update object to delete
+            ref_update = {
+                'name': ref_name,
+                'oldObjectId': current_object_id,
+                'newObjectId': '0000000000000000000000000000000000000000'  # Delete
+            }
+
+            # Update refs
+            updated_refs = self.git_client.update_refs(
+                ref_updates=[ref_update],
+                repository_id=repository,
+                project=project
+            )
+
+            if updated_refs and len(updated_refs) > 0:
+                return updated_refs[0].success if hasattr(updated_refs[0], 'success') else True
+            return False
+        except Exception as e:
+            print(f"Error deleting branch '{branch_name}': {str(e)}")
+            raise
+
     # ========================================================================
     # WORK ITEM TRACKING API METHODS
     # ========================================================================

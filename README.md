@@ -214,6 +214,17 @@ repos = client.list_repositories('MyProject')
 # Get branches
 branches = client.get_refs('MyProject', 'MyRepo', filter_prefix='refs/heads/')
 
+# Create a new branch
+new_branch = client.create_branch(
+    project='MyProject',
+    repository='MyRepo',
+    branch_name='feature/new-feature',
+    source_commit_id='abc123def456...'  # Commit SHA to branch from
+)
+
+# Delete a branch
+success = client.delete_branch('MyProject', 'MyRepo', 'feature/old-feature')
+
 # Get pull requests
 prs = client.get_pull_requests('MyProject', 'MyRepo', status='active')
 
@@ -285,6 +296,11 @@ test_runs = client.get_test_runs('MyProject')
 python example_usage.py
 ```
 
+**Branch management example (create/delete branches):**
+```bash
+python example_branch_operations.py
+```
+
 **Comprehensive example (all APIs):**
 ```bash
 python example_all_apis.py
@@ -322,6 +338,8 @@ __init__(organization_url, username=None, password=None, personal_access_token=N
 - `list_repositories(project)` - List all repositories in a project
 - `get_branches(project, repository)` - Get branches from a repository
 - `get_refs(project, repository, filter_prefix)` - Get refs (branches/tags) with filtering
+- `create_branch(project, repository, branch_name, source_commit_id)` - **Create a new branch**
+- `delete_branch(project, repository, branch_name)` - **Delete a branch**
 - `get_pull_requests(project, repository, status)` - Get pull requests
 - `get_commits(project, repository, branch, top)` - Get commits from a repository
 
